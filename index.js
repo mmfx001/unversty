@@ -72,6 +72,13 @@ const commentSchema = new Schema({
     post_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' },
     time: { type: Date, default: Date.now }
 });
+const NewsSchema = new Schema({
+    title: { type: String, required: true },
+    description: { type: String, required: true },
+
+    id: { type: String, required: true },
+    data: { type:String, required: true}
+});
 
 const postImageSchema = new Schema({
     image: { type: String },
@@ -103,6 +110,7 @@ const clubMemberSchema = new Schema({
 
 // Export Models (Corrected export syntax)
 const Faculty = mongoose.model('Faculty', facultySchema);
+const News = mongoose.model('news', NewsSchema);
 const Product = mongoose.model('Product', productSchema);
 const ShopHistory = mongoose.model('ShopHistory', shopHistorySchema);
 const ClubAccount = mongoose.model('ClubAccount', clubAccountSchema);
@@ -202,6 +210,7 @@ function getItem(model, modelName) {
 
 // Use routes for different models
 app.use('/users', createCRUDRoutes(User, 'User'));
+app.use('/news', createCRUDRoutes(News, 'News'));
 app.use('/faculties', createCRUDRoutes(Faculty, 'Faculty'));
 app.use('/products', createCRUDRoutes(Product, 'Product'));
 app.use('/shopHistories', createCRUDRoutes(ShopHistory, 'ShopHistory'));
