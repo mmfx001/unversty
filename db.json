@@ -1,0 +1,76 @@
+{
+    "posts": [
+        {
+            "id": 10,
+            "body": "Nimadir post",
+            "images": [
+                {
+                    "id": 21,
+                    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRmCy16nhIbV3pI1qLYHMJKwbH2458oiC9EmA&s"
+                },
+                {
+                    "id": 22,
+                    "image": "https://plus.unsplash.com/premium_photo-1664474619075-644dd191935f?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aW1hZ2V8ZW58MHx8MHx8fDA%3D"
+                },
+                {
+                    "id": 23,
+                    "image": "https://gratisography.com/wp-content/uploads/2024/01/gratisography-cyber-kitty-800x525.jpg"
+                }
+            ],
+            "created_at": "2024-10-31T14:28:20.579434+05:00",
+            "likes": 40,
+            "comments_count": 0,
+            "club_id": {
+                "id": 1,
+                "name": "Music CLub",
+                "logo": "https://gratisography.com/wp-content/uploads/2024/10/gratisography-cool-cat-800x525.jpg"
+            }
+        },
+        {
+            "id": 2,
+            "body": "Keyingi hafta festival bo'ladi",
+            "images": [
+                {
+                    "id": 2,
+                    "image": "https://gratisography.com/wp-content/uploads/2024/01/gratisography-cyber-kitty-800x525.jpg"
+                }
+            ],
+            "created_at": "2024-10-28T17:35:27.213959+05:00",
+            "likes": 2,
+            "comments_count": 0,
+            "club_id": {
+                "id": 1,
+                "name": "Music CLub",
+                "logo": "https://gratisography.com/wp-content/uploads/2024/10/gratisography-cool-cat-800x525.jpg"
+            }
+        }
+    ],
+    "users": [
+        {
+            "id": 2,
+            "name": "Falonchi",
+            "surname": "Falonchiyev",
+            "university_id": "233022",
+            "grade": {
+                "grade_name": "Senior"
+            },
+            "faculty": {
+                "faculty_name": "Chemical Engineering"
+            },
+            "image": null
+        },
+        {
+            "id": 1,
+            "name": "Dilshod",
+            "surname": "Muxtorov",
+            "university_id": "220077",
+            "grade": {
+                "grade_name": "Junior"
+            },
+            "faculty": {
+                "faculty_name": "Software Engineering"
+            },
+            "image": null
+        }
+    ]
+}
