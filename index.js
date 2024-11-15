@@ -24,7 +24,9 @@ const userSchema = new Schema({
         event_id: { type: mongoose.Schema.Types.ObjectId, ref: 'PromoEvent' },
         time: { type: Date, default: Date.now }
     }],
-    posts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }]
+    posts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
+    likeItems:[String]
+    
 });
 
 const facultySchema = new Schema({
