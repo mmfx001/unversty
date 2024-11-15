@@ -16,17 +16,16 @@ const userSchema = new Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     img: { type: String },
-    faculty: { type: mongoose.Schema.Types.ObjectId, ref: 'Faculty' },
+    faculty: { type: String },
     role: { type: String, required: true },
     tokens: [{
         reason: String,
         quantity: Number,
-        event_id: { type: mongoose.Schema.Types.ObjectId, ref: 'PromoEvent' },
-        time: { type: Date, default: Date.now }
+        event_id: { type: String },
+        time: { type: String }
     }],
-    posts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
-    likeItems:[String]
-    
+    likeItems: [String]
+
 });
 
 const facultySchema = new Schema({
@@ -38,8 +37,8 @@ const purchaseSchema = new Schema({
     productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
     productName: { type: String, required: true },
     cost: { type: Number, required: true },
-    purchaseDate: { type: Date, default: Date.now },
-    status: { type: String, enum: ['ожидает выдачи', 'получено', 'отменен'], default: 'ожидает выдачи' }
+    purchaseDate: { type: String },
+    status: { type: String }
 });
 
 const productSchema = new Schema({
@@ -72,18 +71,19 @@ const categorySchema = new Schema({
 
 const postSchema = new Schema({
     title: { type: String, required: true },
+    userid: { type: String, required: true },
     description: { type: String, required: true },
-    datetime: { type: Date, default: Date.now },
+    datetime: { type: String },
     image: { type: String },
-    club_id: { type: mongoose.Schema.Types.ObjectId, ref: 'ClubAccount' },
+    club_id: { type: String },
     likes: { type: Number, default: 0 }
 });
 
 const commentSchema = new Schema({
     text: { type: String, required: true },
-    user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    post_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' },
-    time: { type: Date, default: Date.now }
+    user_id: { type: String },
+    post_id: { type: String },
+    time: { type: String }
 });
 
 const newsSchema = new Schema({
@@ -93,7 +93,7 @@ const newsSchema = new Schema({
     data: { type: String, required: true }
 });
 const registerSchema = new Schema({
-   
+
     userid: { type: String, required: true },
 });
 const postImageSchema = new Schema({
