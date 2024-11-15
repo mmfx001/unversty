@@ -1,7 +1,9 @@
 // Import necessary modules
 const express = require('express');
 const mongoose = require('mongoose');
+const cors = require('cors')
 const Schema = mongoose.Schema;
+
 
 // MongoDB URI
 const uri = 'mongodb+srv://dilbekshermatov:dilbek1233@cluster0.fd3n7.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
@@ -27,6 +29,15 @@ const userSchema = new Schema({
 
 const facultySchema = new Schema({
     faculty_name: { type: String, required: true }
+});
+
+const purchaseSchema = new Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+    productName: { type: String, required: true },
+    cost: { type: Number, required: true },
+    purchaseDate: { type: Date, default: Date.now },
+    status: { type: String, enum: ['ожидает выдачи', 'получено', 'отменен'], default: 'ожидает выдачи' }
 });
 
 const productSchema = new Schema({
@@ -72,14 +83,17 @@ const commentSchema = new Schema({
     post_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' },
     time: { type: Date, default: Date.now }
 });
-const NewsSchema = new Schema({
+
+const newsSchema = new Schema({
     title: { type: String, required: true },
     description: { type: String, required: true },
-
     id: { type: String, required: true },
-    data: { type:String, required: true}
+    data: { type: String, required: true }
 });
-
+const registerSchema = new Schema({
+   
+    userid: { type: String, required: true },
+});
 const postImageSchema = new Schema({
     image: { type: String },
     post_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' },
@@ -102,15 +116,18 @@ const promoEventSchema = new Schema({
     event_id: { type: mongoose.Schema.Types.ObjectId, ref: 'ClubEvent' }
 });
 
+
+
 const clubMemberSchema = new Schema({
     user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     club_id: { type: mongoose.Schema.Types.ObjectId, ref: 'ClubAccount' },
     time: { type: Date, default: Date.now }
 });
 
-// Export Models (Corrected export syntax)
+// Export Models
 const Faculty = mongoose.model('Faculty', facultySchema);
-const News = mongoose.model('news', NewsSchema);
+const News = mongoose.model('News', newsSchema);
+const Register = mongoose.model('Register', registerSchema);
 const Product = mongoose.model('Product', productSchema);
 const ShopHistory = mongoose.model('ShopHistory', shopHistorySchema);
 const ClubAccount = mongoose.model('ClubAccount', clubAccountSchema);
@@ -122,66 +139,86 @@ const ClubEvent = mongoose.model('ClubEvent', clubEventSchema);
 const PromoEvent = mongoose.model('PromoEvent', promoEventSchema);
 const ClubMember = mongoose.model('ClubMember', clubMemberSchema);
 const User = mongoose.model('User', userSchema);
+const Purchase = mongoose.model('Purchase', purchaseSchema);
 
 // Express app initialization
 const app = express();
-
-// Middleware to parse JSON bodies
 app.use(express.json());
+app.use(cors());
+// Добавим новый маршрут для отмены покупки
+app.put('/purchases/:id/cancel', getItem(Purchase, 'Purchase'), async (req, res) => {
+    try {
+        // Change the purchase status to 'отменен'
+        res.item.status = 'отменен';
+
+        // Save the changes to the database without deleting the history
+        const updatedItem = await res.item.save();
+
+        // Optionally: Update the product quantity or user tokens if necessary (like in your original logic)
+        const product = await Product.findById(res.item.productId);
+        if (product) {
+            // Increase the product quantity by 1 (assuming cancellation means return)
+            product.quantity += 1;
+            await product.save();
+        }
+
+        const user = await User.findById(res.item.userId);
+        if (user && res.item.cost) {
+            // Refund tokens to the user
+            user.tokens[0].quantity += res.item.cost; // Assuming the cost is in tokens, adjust if necessary
+            await user.save();
+        }
+
+        // Respond with the updated purchase item
+        res.json(updatedItem);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 
 // Create CRUD routes for any model
 const createCRUDRoutes = (model, modelName) => {
     const router = express.Router();
 
-    // GET all items
     router.get('/', async (req, res) => {
         try {
             const items = await model.find();
             res.json(items);
         } catch (err) {
-            console.error(`GET /${modelName.toLowerCase()} error:`, err.message);
             res.status(500).json({ message: err.message });
         }
     });
 
-    // GET one item by ID
     router.get('/:id', getItem(model, modelName), (req, res) => {
         res.json(res.item);
     });
 
-    // POST new item
     router.post('/', async (req, res) => {
-        console.log(`POST /${modelName.toLowerCase()}`);
-        console.log('Request Body:', req.body);
         const item = new model(req.body);
         try {
             const newItem = await item.save();
             res.status(201).json(newItem);
         } catch (err) {
-            console.error(`POST /${modelName.toLowerCase()} error:`, err.message);
             res.status(400).json({ message: err.message });
         }
     });
 
-    // PUT update item
     router.put('/:id', getItem(model, modelName), async (req, res) => {
         Object.assign(res.item, req.body);
         try {
             const updatedItem = await res.item.save();
             res.json(updatedItem);
         } catch (err) {
-            console.error(`PUT /${modelName.toLowerCase()}/${req.params.id} error:`, err.message);
             res.status(400).json({ message: err.message });
         }
     });
 
-    // DELETE item
     router.delete('/:id', getItem(model, modelName), async (req, res) => {
         try {
             await res.item.remove();
             res.json({ message: `${modelName} deleted` });
         } catch (err) {
-            console.error(`DELETE /${modelName.toLowerCase()}/${req.params.id} error:`, err.message);
             res.status(500).json({ message: err.message });
         }
     });
@@ -189,7 +226,8 @@ const createCRUDRoutes = (model, modelName) => {
     return router;
 };
 
-// Middleware to get item by ID
+
+
 function getItem(model, modelName) {
     return async (req, res, next) => {
         let item;
@@ -199,17 +237,17 @@ function getItem(model, modelName) {
                 return res.status(404).json({ message: `${modelName} not found` });
             }
         } catch (err) {
-            console.error(`GET_ITEM /${modelName.toLowerCase()}/${req.params.id} error:`, err.message);
             return res.status(500).json({ message: err.message });
         }
-
         res.item = item;
         next();
     };
 }
 
 // Use routes for different models
+app.use('/purchases', createCRUDRoutes(Purchase, 'Purchase'));
 app.use('/users', createCRUDRoutes(User, 'User'));
+app.use('/register', createCRUDRoutes(Register, 'Register'));
 app.use('/news', createCRUDRoutes(News, 'News'));
 app.use('/faculties', createCRUDRoutes(Faculty, 'Faculty'));
 app.use('/products', createCRUDRoutes(Product, 'Product'));
@@ -224,23 +262,22 @@ app.use('/promoEvents', createCRUDRoutes(PromoEvent, 'PromoEvent'));
 app.use('/clubMembers', createCRUDRoutes(ClubMember, 'ClubMember'));
 
 // MongoDB connection
+mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
 mongoose.connection.on('connected', () => {
-    console.log('Mongoose: Connected to MongoDB');
+    console.log('Connected to MongoDB');
 });
 
 mongoose.connection.on('error', (err) => {
-    console.error('Mongoose: Connection error:', err);
+    console.error('MongoDB connection error:', err);
 });
 
 mongoose.connection.on('disconnected', () => {
-    console.log('Mongoose: Disconnected from MongoDB');
+    console.log('Disconnected from MongoDB');
 });
 
-// MongoDB connection logic
-mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-
-// Start the Express server
-const port = 5000;
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
