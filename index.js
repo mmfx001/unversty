@@ -37,9 +37,11 @@ const purchaseSchema = new Schema({
     productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
     productName: { type: String, required: true },
     cost: { type: Number, required: true },
-    purchaseDate: { type: String },
-    status: { type: String }
+    purchaseDate: { type: Date, default: Date.now },
+    productImg: { type: String },
+    status: { type: String, enum: ['ожидает выдачи', 'получено', 'отменен'], default: 'ожидает выдачи' }
 });
+
 
 const productSchema = new Schema({
     name: { type: String, required: true },
