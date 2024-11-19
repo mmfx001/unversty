@@ -62,7 +62,9 @@ const clubAccountSchema = new Schema({
     leader: { type: String, required: true },
     login: { type: String, required: true },
     password: { type: String, required: true },
-    logo: { type: String }
+    logo: { type: String },
+    description: { type: String },
+    followers: { type: String }
 });
 
 const categorySchema = new Schema({
@@ -71,7 +73,6 @@ const categorySchema = new Schema({
 
 const postSchema = new Schema({
     title: { type: String, required: true },
-    userid: { type: String, required: true },
     description: { type: String, required: true },
     datetime: { type: String },
     image: { type: String },
