@@ -90,10 +90,8 @@ const commentSchema = new Schema({
 });
 
 const newsSchema = new Schema({
-    title: { type: String, required: true },
-    description: { type: String, required: true },
-    id: { type: String, required: true },
-    data: { type: String, required: true }
+    url: { type: String, required: true },
+ 
 });
 const registerSchema = new Schema({
 
