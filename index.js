@@ -60,7 +60,7 @@ const shopHistorySchema = new Schema({
 
 const clubAccountSchema = new Schema({
     name: { type: String, required: true },
-    category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
+    category: { type: String },
     leader: { type: String, required: true },
     login: { type: String, required: true },
     password: { type: String, required: true },
@@ -282,7 +282,7 @@ mongoose.connection.on('disconnected', () => {
 });
 
 // Start server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
