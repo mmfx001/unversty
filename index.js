@@ -3,8 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors')
 const Schema = mongoose.Schema;
-const multer = require('multer');
-const path = require('path');
+
 
 // MongoDB URI
 const uri = 'mongodb+srv://dilbekshermatov:dilbek1233@cluster0.fd3n7.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
@@ -48,8 +47,7 @@ const productSchema = new Schema({
     name: { type: String, required: true },
     img: { type: String },
     cost: { type: Number, required: true },
-    quantity: { type: Number, required: true },
-    url: { type: String }
+    quantity: { type: Number, required: true }
 });
 
 const shopHistorySchema = new Schema({
@@ -92,8 +90,8 @@ const commentSchema = new Schema({
 });
 
 const newsSchema = new Schema({
-    img: { type: String, required: true },
-
+    url: { type: String, required: true },
+ 
 });
 const registerSchema = new Schema({
 
@@ -129,8 +127,6 @@ const clubMemberSchema = new Schema({
     time: { type: Date, default: Date.now }
 });
 
-
-
 // Export Models
 const Faculty = mongoose.model('Faculty', facultySchema);
 const News = mongoose.model('News', newsSchema);
@@ -152,133 +148,7 @@ const Purchase = mongoose.model('Purchase', purchaseSchema);
 const app = express();
 app.use(express.json());
 app.use(cors());
-const fs = require('fs');
-const { url } = require('inspector');
-const { type } = require('os');
-// Create required directories
-const dirs = ['uploads', 'news'];
-dirs.forEach(dir => {
-    if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-    }
-});
-
 // Добавим новый маршрут для отмены покупки
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        // Папка для сохранения изображений
-        cb(null, 'uploads/');
-    },
-    filename: (req, file, cb) => {
-        // Генерация уникального имени файла
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
-    }
-});
-
-// Инициализация multer
-const upload = multer({ dest: 'uploads/' });
-
-app.post('/uploads/news', upload.single('img'), async (req, res) => {
-    try {
-        const { imgUrl } = req.body;
-        const file = req.file;
-
-        if (!file && !imgUrl) {
-            return res.status(400).json({ error: 'No image or URL provided' });
-        }
-
-        let newNews;
-        if (file) {
-            const fileUrl = `http://localhost:4000/uploads/${file.filename}`;
-            newNews = new News({ img: fileUrl }); // Assuming News model exists
-        } else if (imgUrl) {
-            newNews = new News({ img: imgUrl }); // Assuming News model exists
-        }
-
-        const savedNews = await newNews.save();
-        res.status(201).json(savedNews);
-    } catch (error) {
-        console.error('Error uploading news:', error);
-        res.status(500).json({ error: 'Failed to upload image' });
-    }
-});
-
-
-
-
-app.get('/news', async (req, res) => {
-    try {
-        const news = await News.find();
-        res.json(news);
-    } catch (error) {
-        handleError(res, error);
-    }
-});
-
-app.delete('/news/:id', getItem(News, 'News'), async (req, res) => {
-    try {
-        const productImage = res.item.img;
-
-        // Agar tasvir URL bo'lsa, uni o'chirish
-        if (productImage && productImage.startsWith('http://localhost:4000/uploads/')) {
-            // Tasvirni URL orqali o'chirish
-            const imagePath = path.join(__dirname, productImage.replace('http://localhost:4000/uploads/', 'uploads/'));
-            console.log('Image Path:', imagePath);  // Log the image path
-
-            // Tasvirni o'chirish
-            fs.unlink(imagePath, (err) => {
-                if (err) {
-                    console.error('Tasvirni o\'chirishda xatolik:', err);
-                    return res.status(500).json({ message: 'Tasvirni o\'chirishda xatolik' });
-                }
-                console.log('Tasvir muvaffaqiyatli o\'chirildi');
-            });
-        }
-
-        // Mahsulotni ma'lumotlar bazasidan o'chirish
-        await res.item.remove();
-
-        // Foydalanuvchiga muvaffaqiyatli o'chirish haqida xabar qaytarish
-        res.json({ message: 'Mahsulot muvaffaqiyatli o\'chirildi' });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Mahsulotni o\'chirishda xatolik' });
-    }
-});
-
-
-
-// Маршрут для загрузки изображений
-app.post('/uploads/upload', upload.single('img'), async (req, res) => {
-    try {
-        const { name, cost, quantity, img } = req.body;
-
-        if (!name || !cost || !quantity || (!req.file && !img)) {
-            return res.status(400).json({ error: 'All fields are required, including an image file or URL.' });
-        }
-
-        // Determine image source: file or URL
-        const imagePath = req.file
-            ? `http://localhost:4000/uploads/${req.file.filename}` // File path
-            : img; // URL
-
-        const newProduct = new Product({
-            name,
-            cost,
-            quantity,
-            img: imagePath,
-        });
-
-        const savedProduct = await newProduct.save();
-        res.status(201).json(savedProduct); // Return saved product
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to save product.' });
-    }
-});
-
-
 app.put('/purchases/:id/cancel', getItem(Purchase, 'Purchase'), async (req, res) => {
     try {
         // Change the purchase status to 'отменен'
@@ -309,38 +179,8 @@ app.put('/purchases/:id/cancel', getItem(Purchase, 'Purchase'), async (req, res)
     }
 });
 
-app.delete('/products/:id', getItem(Product, 'Product'), async (req, res) => {
-    try {
-        // Получаем путь или URL изображения
-        const productImage = res.item.img;
 
-        // Проверяем, если изображение — это локальный файл
-        if (productImage && productImage.startsWith('http://localhost:4000/uploads/')) {
-            const imagePath = path.join(__dirname, productImage.replace('http://localhost:4000/uploads/', 'uploads/'));
-            console.log('Image Path:', imagePath); // Логируем путь изображения
-
-            // Удаляем файл
-            fs.unlink(imagePath, (err) => {
-                if (err) {
-                    console.error('Ошибка при удалении файла изображения:', err);
-                    return res.status(500).json({ message: 'Ошибка при удалении файла изображения' });
-                }
-                console.log('Файл изображения успешно удалён');
-            });
-        }
-
-        // Удаляем продукт из базы данных
-        await res.item.remove();
-
-        // Возвращаем успешный ответ пользователю
-        res.json({ message: 'Продукт и связанное изображение успешно удалены' });
-    } catch (err) {
-        console.error('Ошибка при удалении продукта:', err);
-        res.status(500).json({ message: 'Ошибка при удалении продукта' });
-    }
-});
-
-
+// Create CRUD routes for any model
 const createCRUDRoutes = (model, modelName) => {
     const router = express.Router();
 
@@ -407,9 +247,6 @@ function getItem(model, modelName) {
     };
 }
 
-
-
-
 // Use routes for different models
 app.use('/purchases', createCRUDRoutes(Purchase, 'Purchase'));
 app.use('/users', createCRUDRoutes(User, 'User'));
@@ -426,7 +263,7 @@ app.use('/postImages', createCRUDRoutes(PostImage, 'PostImage'));
 app.use('/clubEvents', createCRUDRoutes(ClubEvent, 'ClubEvent'));
 app.use('/promoEvents', createCRUDRoutes(PromoEvent, 'PromoEvent'));
 app.use('/clubMembers', createCRUDRoutes(ClubMember, 'ClubMember'));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // MongoDB connection
 mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
