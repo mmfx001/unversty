@@ -341,8 +341,6 @@ app.delete('/products/:id', getItem(Product, 'Product'), async (req, res) => {
 });
 
 
-
-// Create CRUD routes for any model
 const createCRUDRoutes = (model, modelName) => {
     const router = express.Router();
 
@@ -358,8 +356,6 @@ const createCRUDRoutes = (model, modelName) => {
     router.get('/:id', getItem(model, modelName), (req, res) => {
         res.json(res.item);
     });
-
-
 
     router.post('/', async (req, res) => {
         const item = new model(req.body);
@@ -410,6 +406,9 @@ function getItem(model, modelName) {
         next();
     };
 }
+
+
+
 
 // Use routes for different models
 app.use('/purchases', createCRUDRoutes(Purchase, 'Purchase'));
